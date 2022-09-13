@@ -33,9 +33,9 @@ You probably want the high-level, idiomatic Rust bindings: [littlefs2][littlefs2
 
 Upstream release: [v2.2.1][upstream-release]
 
-[littlefs]: https://github.com/ARMmbed/littlefs
+[littlefs]: https://github.com/littlefs-project/littlefs
 [littlefs2]: https://github.com/nickray/littlefs2
-[upstream-release]: https://github.com/ARMmbed/littlefs/releases/tag/v2.2.1
+[upstream-release]: https://github.com/littlefs-project/littlefs/releases/tag/v2.2.1
 
 #### License
 
@@ -44,4 +44,4 @@ Upstream release: [v2.2.1][upstream-release]
 <sub>The file `string.c` is licensed under GPL-2.0.<br>
 Permissively licensed replacement implementation welcome!</sub>
 
-[bsd-3-clause]: https://github.com/ARMmbed/littlefs/blob/master/LICENSE.md
+[bsd-3-clause]: https://github.com/littlefs-project/littlefs/blob/master/LICENSE.md

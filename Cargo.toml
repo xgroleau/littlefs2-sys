@@ -10,10 +10,10 @@ categories = ["embedded", "filesystem", "no-std"]
 repository = "https://github.com/nickray/littlefs2-sys"
 
 [dependencies]
-cty = "0.2.1"
+cty = "0.2.2"
 
 [build-dependencies]
-bindgen = { version = "0.56.0", default-features = false }
+bindgen = { version = "0.60.1", default-features = false }
 cc = "1"
 
 [features]
