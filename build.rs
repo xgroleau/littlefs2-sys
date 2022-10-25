@@ -1,43 +1,38 @@
 use std::env;
-use std::fs;
-use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::path::PathBuf;
-
-fn patch_lfs_h(src: &str, dest: &str) {
-    let input = fs::OpenOptions::new()
-        .read(true)
-        .write(false)
-        .open(src)
-        .unwrap();
-    let reader = BufReader::new(input);
-
-    let output = fs::OpenOptions::new()
-        .write(true)
-        .create(true)
-        .open(dest)
-        .unwrap();
-    let mut writer = BufWriter::new(output);
-
-    for line in reader.lines().map(Result::unwrap) {
-        if line != "#include \"lfs_util.h\"" {
-            writer.write_all(line.as_bytes()).unwrap();
-            writer.write_all(b"\n").unwrap();
-        }
-    }
-
-    writer.flush().unwrap();
-}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut builder = cc::Build::new();
     let target = env::var("TARGET")?;
+    let include_paths = String::from_utf8(
+        cc::Build::new()
+            .get_compiler()
+            .to_command()
+            .arg("-E")
+            .arg("-Wp,-v")
+            .arg("-xc")
+            .arg("/dev/null")
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::piped())
+            .spawn()
+            .expect("Failed to run the compiler to get paths")
+            .wait_with_output()
+            .expect("Failed to run the compiler to get paths")
+            .stderr,
+    )
+    .unwrap()
+    .lines()
+    .filter_map(|line| line.strip_prefix(" "))
+    .map(|path| format!("-isystem{}", path))
+    .collect::<Vec<_>>();
+
     let builder = builder
         .flag("-std=c11")
+        .flag("-Wno-unused-function")
         .flag("-DLFS_NO_MALLOC")
         .flag("-DLFS_NO_DEBUG")
         .flag("-DLFS_NO_WARN")
         .flag("-DLFS_NO_ERROR")
-        .flag("-Wno-unused-function")
         .file("littlefs/lfs.c")
         .file("littlefs/lfs_util.c")
         .file("string.c");
@@ -50,18 +45,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     builder.compile("lfs-sys");
 
-    let mut lfs_h_out = env::var("OUT_DIR").unwrap();
-    lfs_h_out.push_str("/lfs.h");
-    // lfs_util.h pulls in various system headers. Some of them use u128 types
-    // which bindgen can't handle correctly due to Rust not having stable ABI
-    // for u128 type. This results in massive amount of compilation warnings.
-    // As a workaround we remove include of `lfs_util.h` file, which have some
-    // utilities useful for C programs but not Rust.
-    patch_lfs_h("littlefs/lfs.h", &lfs_h_out);
-
     let bindings = bindgen::Builder::default()
-        .header(&lfs_h_out)
+        .header("littlefs/lfs.h")
         .clang_arg(format!("--target={}", target))
+        .clang_args(&include_paths)
         .use_core()
         .ctypes_prefix("cty")
         .rustfmt_bindings(true)
