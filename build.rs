@@ -27,8 +27,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     .collect::<Vec<_>>();
 
     let builder = builder
+        .warnings(false)
         .flag("-std=c11")
-        .flag("-Wno-unused-function")
         .flag("-DLFS_NO_MALLOC")
         .flag("-DLFS_NO_DEBUG")
         .flag("-DLFS_NO_WARN")
