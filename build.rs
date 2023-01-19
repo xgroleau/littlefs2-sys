@@ -28,7 +28,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let builder = builder
         .warnings(false)
-        .flag("-std=c11")
         .flag("-DLFS_NO_MALLOC")
         .flag("-DLFS_NO_DEBUG")
         .flag("-DLFS_NO_WARN")
